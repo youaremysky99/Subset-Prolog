@@ -1,0 +1,48 @@
+Lab04/05 : Building a Parser and Interpreter for Prolog 
+=======================================================
+      Strict Deadline : 16th Nov 2019 (8pm)
+
+The main objective of this lab is to (i) write a parser for
+Prolog, and (ii) provide a better understanding of the unification,
+resolution and cut mechanism by implementing them for a
+simple logic programming languages.
+
+What better way to do it then via an interpreter for
+a simple Prolog-like language.
+
+Your main tasks will be to build a parser (70%) and an
+interpreter (30%) in Haskell for a subset of the Prolog language.
+Your solution must include the following two methods:
+
+  parseProgram :: String -> Either ParseError Program
+  interpret :: Program -> Rel -> [Subs]
+
+In writing your interpreter you may initially assume the
+absence of the cut operator, but to subsequently consider
+what it takes for the cut operator to be considered.
+
+The EBNF syntax for this Prolog-subset is
+
+<S> ::= { C } +
+<C> ::= <F> | <G>
+<F> ::= <Q> .
+<G> ::= <Q> :- <Q> {, <Q> }.
+<Q> ::= <A> ( [<T> {, <T>}] ) | "!"
+<A> ::= <atom>    # identifier starting with lower case or operator
+<T> ::= <V> | <A> | <L> | <Q>
+<V> ::= <var>     # identifier starting with _ or upper case
+<L> := "[" <Q> {"|" <Q>}  "]"
+     | "[" [ <Q> {, <Q>}  "]"
+
+Your intrepreter should accept a query and return all answers
+(in a lazy list) from a depth-first search strategy.
+Some stub code is provided for you. You may change the interface
+of all methods, except for parseProgram, interpret. You must not
+change the AST.hs nor the Subs type.
+
+If you are working as a pair, please also write a short documentation
+of your project.
+
+Have fun with this last lab assignment.
+
+All the Best. 
