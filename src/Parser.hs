@@ -20,30 +20,25 @@ functorP = do
                         (TName s) -> Just s
                         _ -> Nothing)
     _ <- symbol "("                        
-    terms <- flip sepBy (symbol ",") $ (termP <|> listP)
+    terms <- flip sepBy (symbol ",") $ termP
     _ <- symbol ")"
     return (name, terms)
 
-listP2::Parser [Term] 
-listP2 = do  
-        first <- flip sepBy (symbol ",") $ termP
-        second <- option [] ((symbol "|") *> listP2)
-        return (first ++ second)
-
+listP2 :: Parser [Term]
+listP2 = do
+    first <- flip sepBy (symbol ",") $ termP
+    second <- option [] ((symbol "|") *> listP2)
+    return (first ++ second)
 
 listP :: Parser Term
-listP =
-      do 
-          _ <- (symbol "[")
-          terms <- listP2
-          _ <- (symbol "]")
-          return $ foldr (\term acc -> (Func "cons" [term, acc])) (Atom "nil") terms
-         
-    
-
+listP = do
+    _ <- symbol "["
+    terms <- listP2
+    _ <- symbol "]"
+    return $ foldr (\term acc -> (Func "cons" [term, acc])) (Atom "nil") terms
 
 termP :: Parser Term
-termP = do
+termP = listP <|> do
     name <- tokenP (\t -> case t of
                         (TName s) -> Just (Atom s)
                         (TVar s) -> Just (Var s)
