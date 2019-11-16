@@ -27,7 +27,10 @@ functorP = do
 listP :: Parser Term
 listP = do
     _ <- symbol "["
-    terms <- flip sepBy (symbol "," <|> symbol "|") $ (termP <|> listP)
+    terms <- do 
+        first <- flip sepBy (symbol ",") $ termP
+        second <- optional (symbol "|") *> listP 
+        return (first ++ [second])
     _ <- symbol "]"
     case terms of
       [] -> return (Atom "nil")
