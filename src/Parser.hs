@@ -24,17 +24,23 @@ functorP = do
     _ <- symbol ")"
     return (name, terms)
 
-listP :: Parser Term
-listP = do
-    _ <- symbol "["
-    terms <- do 
+listP2::Parser [Term] 
+listP2 = do  
         first <- flip sepBy (symbol ",") $ termP
-        second <- optional (symbol "|") *> listP 
-        return (first ++ [second])
-    _ <- symbol "]"
-    case terms of
-      [] -> return (Atom "nil")
-      _ -> return (Func "cons" terms)
+        second <- option [] ((symbol "|") *> listP2)
+        return (first ++ second)
+
+
+listP :: Parser Term
+listP =
+      do 
+          _ <- (symbol "[")
+          terms <- listP2
+          _ <- (symbol "]")
+          return $ foldr (\term acc -> (Func "cons" [term, acc])) (Atom "nil") terms
+         
+    
+
 
 termP :: Parser Term
 termP = do
