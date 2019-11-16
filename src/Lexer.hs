@@ -18,9 +18,9 @@ varL = TVar <$> (upperName <|> string "_")
     upperName = pure (:) <*> upper <*> (many (alphaNum <|> char '_'))
 
 symL :: Lexer Token
-symL = TSym <$> (string ":-" <|> (choice . map (string . (: [])) $ "().;,!"))
+symL = TSym <$> (string ":-" <|> (choice . map (string . (: [])) $ "[]|().;,!"))
 
 tokensL :: Lexer [(SourcePos, Token)]
 tokensL = between spaces spaces . flip sepBy spaces $ (pure (,) <*> getPosition <*> tokenP)
   where
-    tokenP = nameL <|> varL <|> symL
+    tokenP = (nameL <|> varL <|> symL) <* spaces

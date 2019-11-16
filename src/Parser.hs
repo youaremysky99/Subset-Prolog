@@ -20,9 +20,18 @@ functorP = do
                         (TName s) -> Just s
                         _ -> Nothing)
     _ <- symbol "("                        
-    terms <- flip sepBy (symbol ",") $ termP
+    terms <- flip sepBy (symbol ",") $ (termP <|> listP)
     _ <- symbol ")"
     return (name, terms)
+
+listP :: Parser Term
+listP = do
+    _ <- symbol "["
+    terms <- flip sepBy (symbol "," <|> symbol "|") $ (termP <|> listP)
+    _ <- symbol "]"
+    case terms of
+      [] -> return (Atom "nil")
+      _ -> return (Func "cons" terms)
 
 termP :: Parser Term
 termP = do
