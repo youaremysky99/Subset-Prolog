@@ -15,7 +15,14 @@ symbol c = tokenP (\t -> case t of
   _ -> Nothing)
 
 functorP :: Parser (String, [Term]) -- functor and relation have the same parser
-functorP = error "not yet implemented"
+functorP = do
+    name <- tokenP (\t -> case t of
+                        (TName s) -> Just s
+                        _ -> Nothing)
+    _ <- symbol "("                        
+    terms <- flip sepBy (symbol ",") $ termP
+    _ <- symbol ")"
+    return (name, terms)
 
 termP :: Parser Term
 termP = do
@@ -37,22 +44,19 @@ relP = (symbol "!" *> return Cut)
 relHeadP :: Parser Rel
 relHeadP = fmap (uncurry Rel) functorP
 
-
-
 ruleP :: Parser Rule
 ruleP = do 
     first <- relHeadP
     second <-  ((symbol ".") *> return [[]] ) <|> 
-               ((symbol ":-") *> (flip sepBy (symbol ";") . flip sepBy symbol(",") $ relP) <* (symbol ".")) 
-    return Rule first second   
-
+                ((symbol ":-") *> (flip sepBy (symbol ";") . flip sepBy (symbol",") $ relP) <* (symbol ".")) 
+    return (Rule first second)
 
 programP :: Parser Program
 programP = fmap Program $ many ruleP
 
 parseProgram :: String -> Either ParseError Program
 parseProgram source = do
-  tokens  <- parse (tokensL   <* eof) "" source
+  tokens  <- parse (tokensL <* eof) "" source
   parse (programP <* eof) "" tokens
 
 parseRel :: String -> Either ParseError Rel
