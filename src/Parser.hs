@@ -62,7 +62,7 @@ ruleP = do
     first <- relHeadP
     second <-  ((symbol ".") *> return [[]] ) <|> 
                 ((symbol ":-") *> (flip sepBy (symbol ";") . flip sepBy (symbol",") $ relP) <* (symbol ".")) 
-    return (Rule first second)
+    return (Rule first (second >>= (\lst -> lst >>= (\x -> return [x]))))
 
 programP :: Parser Program
 programP = fmap Program $ many ruleP
