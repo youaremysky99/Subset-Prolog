@@ -76,3 +76,23 @@ parseRel :: String -> Either ParseError Rel
 parseRel source = do
   tokens  <- parse (tokensL   <* eof) "" source
   parse (relHeadP <* (symbol ".") <* eof) "" tokens
+
+parseListRel :: String -> Either ParseError [[Rel]]
+parseListRel source = do 
+   tokens <- parse (tokensL   <* eof) "" source
+   parse ((flip sepBy (symbol ";") . flip sepBy (symbol",") $ relHeadP) <* (symbol ".") <* eof) "" tokens
+
+queryP :: Parser Query 
+queryP = do
+  query <- (flip sepBy (symbol ";") . flip sepBy (symbol",") $ relHeadP) <* (symbol ".") <* eof
+  case query of 
+      ((rel:[]):[]) -> return (Single rel)
+      _ -> return (Multiple query)
+
+
+
+parseQuery :: String -> Either ParseError Query
+parseQuery source = do 
+    tokens  <- parse (tokensL <* eof) "" source
+    parse (queryP) "" tokens
+
