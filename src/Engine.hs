@@ -90,6 +90,15 @@ variables rel = S.toList . S.fromList . aux . toFunctor $ rel
     aux (Func _ terms) = terms >>= aux
     aux (Atom _) = []
 
+variablesOfList :: [Rel] -> [Term]
+variablesOfList [] = []
+variablesOfList (x: xs) = variables(x) ++ variablesOfList(xs)
+
+variablesOfQuery :: [[Rel]] -> [Term]
+variablesOfQuery [] = []
+variablesOfQuery (x: xs) = variablesOfList(x) ++ variablesOfQuery(xs)
+
+
 {- apply substitution to a term -}
 resolve :: Subs -> Term -> Term
 resolve subs (Var x) =
@@ -99,3 +108,7 @@ resolve subs (Var x) =
 
 resolve subs (Func name terms) = Func name (map (resolve subs) terms)
 resolve subs a@(Atom _) = a
+
+append :: Program -> Rule -> Program 
+append (Program rules) new_rule = Program (new_rule: rules) 
+

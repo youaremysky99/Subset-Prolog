@@ -39,6 +39,7 @@ run_prog :: Program -> IO ()
 run_prog program = do
   putStrLn "type a goal: "
   command <- getLine
+
   if (command == "quit")
     then return ()
     else
@@ -47,6 +48,20 @@ run_prog program = do
           do
             let answers = interpret program rel
             (lazy_show rel answers True) >> (run_prog program)
+
+  case parseQuery command of
+      Right (Multiple rels) ->
+        do 
+          let all = variablesOfQuery(rels)
+          let new_predicate = Rel "mr_phan_duc_nhat_minh_pro_vip_98" all 
+          let new_fucking_rule = (Rule new_predicate rels) 
+          let new_program = append program new_fucking_rule
+          let answers = interpret program new_predicate 
+          (lazy_show new_predicate answers True) >> (run_prog program)
+      Right (Single rel) -> 
+        do
+          let answers = interpret program rel
+          (lazy_show rel answers True) >> (run_prog program)
 
         Left err  -> print err >> run_prog program
 
