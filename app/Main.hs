@@ -17,7 +17,7 @@ printSolution query table = traverse printVar (variables query) >> return ()
     printVar v@(Var x) = putStrLn $ x ++ " = " ++ show (resolve table v)
 
 interpret :: Program -> Rel -> [Subs]
-interpret prog rel = searchAll prog (initTree rel)
+interpret prog rel = searchAll prog (initTree rel) 1
 
 {- allow a goal to be typed -}
 run_prog :: Program -> IO ()
