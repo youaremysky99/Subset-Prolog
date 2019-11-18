@@ -4,6 +4,8 @@ import Text.Parsec
 import Lexer
 import AST
 
+data Query = Single Rel | Multiple [[Rel]] deriving Show
+
 type Parser = Parsec [(SourcePos, Token)] ()
 
 tokenP :: (Token -> Maybe a) -> Parser a
@@ -45,13 +47,13 @@ termP = listP <|> do
                         _ -> Nothing)
     case name of -- parser consumes name which can be of atom or functor
       (Atom a) -> (fmap (Func a) . between (symbol "(") (symbol ")")
-                 . flip sepBy1 (symbol ",") $ termP) <|> return name
+                  . flip sepBy1 (symbol ",") $ termP) <|> return name
       _ -> return name
 
 {- parse a relation or cut in body of clause -}
 relP :: Parser Rel
 relP = (symbol "!" *> return Cut) 
-       <|> relHeadP
+        <|> relHeadP
 
 {- parse a relation in head of clause -}
 relHeadP :: Parser Rel
@@ -79,8 +81,8 @@ parseRel source = do
 
 parseListRel :: String -> Either ParseError [[Rel]]
 parseListRel source = do 
-   tokens <- parse (tokensL   <* eof) "" source
-   parse ((flip sepBy (symbol ";") . flip sepBy (symbol",") $ relHeadP) <* (symbol ".") <* eof) "" tokens
+    tokens <- parse (tokensL   <* eof) "" source
+    parse ((flip sepBy (symbol ";") . flip sepBy (symbol",") $ relHeadP) <* (symbol ".") <* eof) "" tokens
 
 queryP :: Parser Query 
 queryP = do
@@ -90,9 +92,7 @@ queryP = do
       _ -> return (Multiple query)
 
 
-
 parseQuery :: String -> Either ParseError Query
 parseQuery source = do 
     tokens  <- parse (tokensL <* eof) "" source
     parse (queryP) "" tokens
-
