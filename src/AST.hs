@@ -10,8 +10,6 @@ data Rule = Rule Rel [[Rel]] deriving Show
 data Rel = Rel String [Term] 
          | Cut deriving Show
 
-data Query = Single Rel | Multiple [[Rel]] deriving Show
-
 {- this supports either an atom, variable or functor term -} 
 data Term =
   Atom String
