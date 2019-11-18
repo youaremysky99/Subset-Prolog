@@ -39,13 +39,16 @@ run_prog :: Program -> IO ()
 run_prog program = do
   putStrLn "type a goal: "
   command <- getLine
-  case parseRel command of
-      Right rel -> 
-        do
-          let answers = interpret program rel
-          (lazy_show rel answers True) >> (run_prog program)
+  if (command == "quit")
+    then return ()
+    else
+      case parseRel command of
+        Right rel -> 
+          do
+            let answers = interpret program rel
+            (lazy_show rel answers True) >> (run_prog program)
 
-      Left err  -> print err >> run_prog program
+        Left err  -> print err >> run_prog program
 
 {- reading prolog file as argument -}
 main :: IO ()
