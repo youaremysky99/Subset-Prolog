@@ -47,9 +47,35 @@ match (Rel name terms) (Rule (Rel name' terms') _) =
   name == name' && length terms == length terms'
 
 
-searchAll :: Program -> Tree -> [Subs]
-searchAll program tree =
-  error "to be implemented"
+searchAll :: Program -> Tree -> Int -> [Subs]
+searchAll prog@(Program rules) (Tree goal@(Goal subs rels) subtree exp) height =
+  case rels of
+    [] -> return subs
+    _ ->
+      case exp of
+        False -> searchAll prog (Tree goal (expandTree prog goal subtree (height+1)) True) height
+        True ->
+          case subtree of
+            [] -> []
+            lst -> do
+              stree <- lst
+              searchAll prog stree (height+1)
+
+expandTree :: Program -> Goal -> [Tree] -> Int -> [Tree]
+expandTree (Program rules) (Goal subs (rel : rest)) trees height = do
+  matched <- filter (match rel) rules
+  let newRule = rename matched height
+  let clause = getClause newRule
+  let lst = getRelList newRule
+  case unify (toFunctor clause) (toFunctor rel) subs of
+    Just newSub -> return (Tree (Goal newSub (lst ++ rest)) [] False)
+    Nothing -> []
+
+getClause :: Rule -> Rel
+getClause (Rule rel _) = rel
+
+getRelList :: Rule -> [Rel]
+getRelList (Rule _ rels) = (rels >>= (\x -> x))
 
 
 {- returns all variables in a relation -}
