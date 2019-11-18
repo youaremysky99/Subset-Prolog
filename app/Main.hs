@@ -43,27 +43,22 @@ run_prog program = do
   if (command == "quit")
     then return ()
     else
-      case parseRel command of
-        Right rel -> 
+    case parseQuery command of
+        Right (Multiple rels) ->
+          do 
+            let all = unique $ variablesOfQuery(rels)
+            let new_predicate = Rel "mr_phan_duc_nhat_minh_pro_vip_98" all 
+            let new_fucking_rule = (Rule new_predicate rels) 
+            let new_program = append program new_fucking_rule
+            let answers = interpret new_program new_predicate 
+            (lazy_show new_predicate answers True) >> (run_prog program)
+        Right (Single rel) -> 
           do
+
             let answers = interpret program rel
             (lazy_show rel answers True) >> (run_prog program)
 
-  case parseQuery command of
-      Right (Multiple rels) ->
-        do 
-          let all = variablesOfQuery(rels)
-          let new_predicate = Rel "mr_phan_duc_nhat_minh_pro_vip_98" all 
-          let new_fucking_rule = (Rule new_predicate rels) 
-          let new_program = append program new_fucking_rule
-          let answers = interpret program new_predicate 
-          (lazy_show new_predicate answers True) >> (run_prog program)
-      Right (Single rel) -> 
-        do
-          let answers = interpret program rel
-          (lazy_show rel answers True) >> (run_prog program)
-
-        Left err  -> print err >> run_prog program
+        Left err -> print err >> run_prog program
 
 {- reading prolog file as argument -}
 main :: IO ()

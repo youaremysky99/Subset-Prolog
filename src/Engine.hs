@@ -112,3 +112,12 @@ resolve subs a@(Atom _) = a
 append :: Program -> Rule -> Program 
 append (Program rules) new_rule = Program (new_rule: rules) 
 
+inside :: [Term] -> Term -> Bool
+inside [] term  =  False
+inside ((Var x): xs) term@(Var y) = (x == y) || (inside xs term) 
+inside (x:xs) term = (inside xs term)
+
+unique :: [Term] -> [Term]
+unique [] = []
+unique (x:xs) = if (inside xs x) then (unique xs) else (x: unique(xs)) 
+
