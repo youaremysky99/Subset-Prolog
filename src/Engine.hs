@@ -33,7 +33,10 @@ unify _ _ _ = Nothing
 rename :: Rule -> Int -> Rule
 rename (Rule head body) height = Rule (renameRel head) (map (map renameRel) body)
   where
-    renameRel = toRel . renameTerm . toFunctor
+    renameRel = \x -> 
+      case x of
+        Cut -> x
+        _ -> (toRel . renameTerm . toFunctor) x
     toRel (Func name terms) = Rel name terms
     renameTerm (Var v)            = Var (v ++ show height)
     renameTerm (Func name terms)  = Func name (map renameTerm terms)
@@ -51,7 +54,8 @@ searchAll :: Program -> Tree -> Int -> [Subs]
 searchAll prog@(Program rules) (Tree goal@(Goal subs rels) subtree exp) height =
   case rels of
     [] -> return subs
-    _ ->
+    (Cut : _) -> return subs
+    _ -> 
       case exp of
         False -> searchAll prog (Tree goal (expandTree prog goal subtree (height+1)) True) height
         True ->
