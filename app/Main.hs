@@ -21,18 +21,18 @@ printSolution query table = traverse printVar (variables query) >> return ()
 interpret :: Program -> Rel -> [Subs]
 interpret prog rel = searchAll prog (initTree rel) 0
 
-lazy_show :: Rel -> [Subs] -> IO() 
-lazy_show rel [] = showTruth 0
-lazy_show rel [x] = (printSolution rel x) 
-lazy_show rel here@(x:xs) =  
+lazy_show :: Rel -> [Subs] -> Bool -> IO() 
+lazy_show rel [] _ = showTruth 0
+lazy_show rel [x] _ = (printSolution rel x) 
+lazy_show rel here@(x:xs) firstTime =  
   do 
-    _ <- (printSolution rel x)
+    _ <- if (firstTime) then (printSolution rel x) else (return ())
     chr <- getChar
     hFlush stdout
     case chr of 
-        '.' -> return ()
-        ';' -> (lazy_show rel xs)
-        _ -> (lazy_show rel here)
+        '.' -> (putStrLn "") >> return ()
+        ';' -> (putStrLn "") >> (lazy_show rel xs True)
+        _ -> (lazy_show rel here False)
 
 {- allow a goal to be typed -}
 run_prog :: Program -> IO ()
@@ -43,7 +43,7 @@ run_prog program = do
       Right rel -> 
         do
           let answers = interpret program rel
-          (lazy_show rel answers) >> (run_prog program)
+          (lazy_show rel answers True) >> (run_prog program)
 
       Left err  -> print err >> run_prog program
 
