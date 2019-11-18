@@ -26,7 +26,7 @@ lazy_show rel [] _ = showTruth 0
 lazy_show rel [x] _ = (printSolution rel x) 
 lazy_show rel here@(x:xs) firstTime =  
   do 
-    _ <- if (firstTime) then (printSolution rel x) else (return ())
+    _ <- if (firstTime) then (printSolution rel x) else (printSolution rel x) >> (lazy_show rel [] True)
     chr <- getChar
     hFlush stdout
     case chr of 
