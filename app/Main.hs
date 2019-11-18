@@ -1,7 +1,6 @@
 module Main where
 
 import System.IO
-import System.Console.Haskeline
 import System.Environment
 import qualified Data.Map.Strict as M
 import Parser
@@ -23,8 +22,8 @@ interpret prog rel = searchAll prog (initTree rel) 0
 
 lazy_show :: Rel -> [Subs] -> Bool -> IO() 
 lazy_show rel [] _ = showTruth 0
-lazy_show rel [x] _ = (printSolution rel x) 
-lazy_show rel here@(x:xs) firstTime =  
+lazy_show rel [x] _ = if (length (variables rel)) == 0 then showTruth 1 else (printSolution rel x) >> (lazy_show rel [] True) 
+lazy_show rel here@(x:xs) firstTime = if (length (variables rel)) == 0 then showTruth 1 else
   do 
     _ <- if (firstTime) then (printSolution rel x) else (printSolution rel x) >> (lazy_show rel [] True)
     chr <- getChar
@@ -39,26 +38,24 @@ run_prog :: Program -> IO ()
 run_prog program = do
   putStrLn "type a goal: "
   command <- getLine
-
   if (command == "quit")
     then return ()
     else
-    case parseQuery command of
-        Right (Multiple rels) ->
-          do 
+      case parseQuery command of
+        Right (Multiple relations) ->
+          do
+            let rels = relations >>= (\lst -> lst >>= (\x -> return [x]))
             let all = unique $ variablesOfQuery(rels)
             let new_predicate = Rel "mr_phan_duc_nhat_minh_pro_vip_98" all 
-            let new_fucking_rule = (Rule new_predicate rels) 
-            let new_program = append program new_fucking_rule
+            let new_rule = (Rule new_predicate rels) 
+            let new_program = append program new_rule
             let answers = interpret new_program new_predicate 
             (lazy_show new_predicate answers True) >> (run_prog program)
         Right (Single rel) -> 
           do
-
             let answers = interpret program rel
             (lazy_show rel answers True) >> (run_prog program)
-
-        Left err -> print err >> run_prog program
+        Left err  -> print err >> run_prog program
 
 {- reading prolog file as argument -}
 main :: IO ()
