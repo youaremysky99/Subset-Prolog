@@ -70,10 +70,16 @@ expandTree (Program rules) (Goal subs (rel : rest)) trees height = do
   matched <- filter (match rel) rules
   let newRule = rename matched height
   let clause = getClause newRule
-  let lst = getRelList newRule
+  let relList = getRelList newRule
+  let lst = takeWhile notCut relList
   case unify (toFunctor clause) (toFunctor rel) subs of
     Just newSub -> return (Tree (Goal newSub (lst ++ rest)) [] False)
     Nothing -> []
+
+notCut :: Rel -> Bool
+notCut x = case x of
+  Cut -> False
+  _ -> True
 
 getClause :: Rule -> Rel
 getClause (Rule rel _) = rel
